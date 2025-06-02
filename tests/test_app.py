@@ -1,7 +1,8 @@
 import json
 from unittest.mock import patch
 
-from app import db, User, StripeProcessedEvent
+from app import db
+from models import User, StripeProcessedEvent
 from datetime import *
 
 
@@ -309,11 +310,8 @@ class TestStripeWebhook:
         })
 
         response = client.post("/stripe/webhook", data=event_data, content_type='application/json')
-        assert response.status_code == 200  # should still process and create user
-
-        user = User.query.first()
-        assert user.stripe_customer_id == "cus_123"
-        assert user.access_until is None
+        assert response.status_code == 200
+        assert User.query.count() == 0
 
     @patch('app.db.session.commit')
     def test_database_error_rollback(self, mock_commit, client):

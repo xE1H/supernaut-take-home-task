@@ -4,7 +4,7 @@ import os
 
 from flask_sqlalchemy import SQLAlchemy
 
-from app import app, db, User, StripeProcessedEvent
+from app import app, db
 
 
 @pytest.fixture
