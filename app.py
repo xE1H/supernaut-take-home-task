@@ -36,47 +36,56 @@ def handle_stripe_webhook():
     if StripeProcessedEvent.query.get(event_id):
         return jsonify({"message": "Event already processed"}), 200
 
-    db.session.add(StripeProcessedEvent(stripe_event_id=event_id))
+    try:
+        db.session.add(StripeProcessedEvent(stripe_event_id=event_id))
 
-    customer_id = event_data.get("data", {}).get("object", {}).get("customer")
-    if not customer_id:
-        return jsonify({"error": "Customer ID not found in event data"}), 400
+        customer_id = event_data.get("data", {}).get("object", {}).get("customer")
+        if not customer_id:
+            return jsonify({"error": "Customer ID not found in event data"}), 400
 
-    user = User.query.filter_by(stripe_customer_id=customer_id).first()
-    if not user:
-        user = User(stripe_customer_id=customer_id)
-        db.session.add(user)
+        user = User.query.filter_by(stripe_customer_id=customer_id).first()
+        if not user:
+            user = User(stripe_customer_id=customer_id)
+            db.session.add(user)
 
-    if event_data["type"] == "customer.subscription.created" or event_data["type"] == "customer.subscription.updated":
-        subscription = event_data.get("data", {}).get("object", {})
-        if not subscription:
-            return jsonify({"error": "Subscription data not found in event"}), 400
+        if event_data["type"] == "customer.subscription.created" or event_data["type"] == "customer.subscription.updated":
+            subscription = event_data.get("data", {}).get("object", {})
 
-        status = subscription.get("status")
+            status = subscription.get("status")
 
-        if status in ["active", "trialing"]:
-            # sub is active -- access until current period end
-            current_period_end = subscription.get("current_period_end")
-            if current_period_end:
+            if status in ["active", "trialing"]:
+                # sub is active -- access until current period end
+                current_period_end = subscription.get("current_period_end")
                 user.access_until = datetime.fromtimestamp(current_period_end, tz=timezone.utc)
-            else:
-                # fallback to 30 days from now if current_period_end is not provided (shouldn't happen)
-                user.access_until = datetime.now(timezone.utc) + timedelta(days=30)
 
-        elif status in ["past_due"]:
-            # keep existing access until the end of the current period
-            pass
-        else:  # canceled, unpaid, incomplete, incomplete_expired
+            elif status in ["past_due"]:
+                # keep existing access until the end of the current period, a grace period # could be implemented here
+                pass
+            else:  # canceled, unpaid, incomplete, incomplete_expired
+                # incomplete -- payment not yet finalized for the subscription, a grace period could be implemented here
+                # incomplete_expired -- payment not finalized, and exprired after 24h of not paying
+                # canceled -- customer cancelled the subscription, cancelled gets set at the end of the current period
+                user.access_until = datetime.now(timezone.utc)
+
+        elif event_data["type"] == "customer.subscription.deleted":
+            # instantly revoke access
             user.access_until = datetime.now(timezone.utc)
 
-    elif event_data["type"] == "customer.subscription.deleted":
-        user.access_until = datetime.now(timezone.utc)
+        elif event_data["type"] == "invoice.payment_failed":
+            # instantly revoke access, a grace period could be implemented here
+            user.access_until = datetime.now(timezone.utc)
 
-    # TODO - figure out if invoice events should be handled here (payment_failed, paid?)
-    # TODO - subscription paused and resumed events?
-    # TODO - grace period? current impl assumes immediate access removal
+        elif event_data["type"] == "invoice.paid":
+            invoice = event_data.get("data", {}).get("object", {})
+            subscription_id = invoice.get("subscription")
 
-    try:
+            if subscription_id:
+                # I believe that in this case, since the subscription object is not provided in the event,
+                # the Stripe API should be called to retrieve the subscription details (to find out the current_period_end)
+                # but for this task, I will assume that the subscription is active and set access until 30 days from now
+
+                user.access_until = datetime.now(timezone.utc) + timedelta(days=30)
+
         db.session.commit()
         return jsonify({"message": "Event processed successfully"}), 200
     except Exception as e:
@@ -85,4 +94,6 @@ def handle_stripe_webhook():
 
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)

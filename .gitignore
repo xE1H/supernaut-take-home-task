@@ -1,4 +1,9 @@
 venv
 venv/*
 .idea
-.idea/
+.idea/*
+tests/.coverage
+tests/.pytest_cache
+tests/.pytest_cache/*
+instance/
+instance/*
