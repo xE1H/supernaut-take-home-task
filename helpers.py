@@ -15,11 +15,11 @@ class ResponseHelper:
         """
         Generate a success response.
         """
-        return jsonify({"status": "success", "message": message}), 200
+        return jsonify({"message": message}), 200
 
     @staticmethod
     def error(message, status_code=400):
         """
         Generate an error response.
         """
-        return jsonify({"status": "error", "message": message}), status_code
+        return jsonify({"error": message}), status_code
