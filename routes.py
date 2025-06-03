@@ -3,8 +3,8 @@ API routes for the app
 """
 from flask import Blueprint, request
 
-from stripe_webhook_handler import StripeWebhookHandler
-from user_access_handler import UserAccessHandler
+from handlers.stripe_webhook_handler import StripeWebhookHandler
+from handlers.user_access_handler import UserAccessHandler
 
 api_bp = Blueprint('api', __name__)
 

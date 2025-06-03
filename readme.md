@@ -35,21 +35,22 @@ exchanged for Postgres or another SQL database if needed. The SQLite file is cre
 ## Project structure
 
 ```sh
-├── app.py                     # Flask application entry point
-├── config.py                  # Configuration settings
-├── models.py                  # Database models
-├── routes.py                  # API route definitions
-├── stripe_webhook_handler.py  # Webhook event processing logic
-├── user_access_handler.py     # User access management
-├── helpers.py                 # Utility functions
-├── requirements.txt           # Python dependencies
-├── requirements-test.txt      # Python dependencies for running tests
-└── tests/                     # Test files
+├── app.py                         # Flask application entry point
+├── config.py                      # Configuration settings
+├── models.py                      # Database models
+├── routes.py                      # API route definitions
+├── helpers.py                     # Utility functions
+├── requirements.txt               # Python dependencies
+├── requirements-test.txt          # Python dependencies for running tests
+├── handlers/                      # Handlers for business logic
+|   ├── stripe_webhook_handler.py  # Webhook event processing logic
+|   └── user_access_handler.py     # User access management
+└── tests/                         # Test files
     ├── __init__.py            
-    ├── conftest.py            # Test fixtures and helpers
-    ├── test_stripe_webhook.py # Webhook handler tests
-    ├── test_user_access.py    # User access tests
-    └── test_integration.py    # E2E tests
+    ├── conftest.py                # Test fixtures and helpers
+    ├── test_stripe_webhook.py     # Webhook handler tests
+    ├── test_user_access.py        # User access tests
+    └── test_integration.py        # E2E tests
 ```
 
 ## Data structures
