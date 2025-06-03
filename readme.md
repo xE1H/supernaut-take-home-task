@@ -104,19 +104,19 @@ The app processes the following Stripe webhook events to maintain subscription s
 
 2. `customer.subscription.deleted`
 
-   Purpose: Handle subscription cancellations.
+   **Purpose:** Handle subscription cancellations.
 
-   Logic: Immediately revoke access by setting `access_until` to current time.
+   **Logic:** Immediately revoke access by setting `access_until` to current time.
 3. `invoice.payment_failed`
 
-   Purpose: Handle failed payments.
+   **Purpose:** Handle failed payments.
 
-   Logic: Immediately revoke access (could be extended with grace periods).
+   **Logic:** Immediately revoke access (could be extended with grace periods).
 4. `invoice.paid`
 
-   Purpose: Handle successful payments.
+   **Purpose:** Handle successful payments.
 
-   Logic:
+   **Logic:**
     - If linked to subscription: Restore access for 30 days (simplified, since the Stripe `Invoice` object does not have
       the subscription object in it, and an API call would be required to retrieve it here).
     - If standalone invoice: No access change.
