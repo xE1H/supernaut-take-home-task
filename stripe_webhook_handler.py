@@ -3,7 +3,8 @@ Stripe webhook event handlers for the app
 """
 from datetime import datetime, timezone, timedelta
 from enum import Enum
-from flask import jsonify
+
+from helpers import ResponseHelper
 from models import db, User, StripeProcessedEvent
 
 
@@ -33,20 +34,20 @@ class StripeWebhookHandler:
     @staticmethod
     def process_webhook_event(event_data):
         """
-        Main webhook event processor that handles double events and delegates event handling to specific handlers
+        Main webhook event processor that handles idempotent events and delegates event handling to specific handlers
         """
         event_id = event_data.get("id")
 
         if not event_id:
-            return jsonify({"error": "Invalid event data -- event id not found"}), 400
+            return ResponseHelper.error("Invalid event data -- event id not found")
 
         # check if event was already processed for idempotency
         if StripeProcessedEvent.query.get(event_id):
-            return jsonify({"message": "Event already processed"}), 200
+            return ResponseHelper.success("Event already processed")
 
         # check if event type is relevant
         if event_data["type"] not in RELEVANT_EVENTS:
-            return jsonify({"message": "Event type not relevant, ignoring"}), 200
+            return ResponseHelper.success("Event type not relevant, ignoring")
 
         try:
             # mark event as processed
@@ -55,17 +56,18 @@ class StripeWebhookHandler:
             # get or create user
             user = StripeWebhookHandler._get_or_create_user(event_data)
             if not user:
-                return jsonify({"error": "Customer ID not found in event data"}), 400
+                return ResponseHelper.error("Customer ID not found in event data")
 
             # handle the specific event type
             StripeWebhookHandler._handle_event_by_type(event_data, user)
 
             db.session.commit()
-            return jsonify({"message": f"Event processed successfully for user id {user.id}"}), 200
+            return ResponseHelper.success(f"Event processed successfully for user id {user.id}")
+            # Adding ID here just so I pull that user ID later
 
         except Exception as e:
             db.session.rollback()
-            return jsonify({"error": f"Failed to process event: {str(e)}"}), 500
+            return ResponseHelper.error(f"Failed to process event: {str(e)}", 500)
 
     @staticmethod
     def _get_or_create_user(event_data):

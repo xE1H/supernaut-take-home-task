@@ -7,3 +7,4 @@ tests/.pytest_cache
 tests/.pytest_cache/*
 instance/
 instance/*
+*,cover
