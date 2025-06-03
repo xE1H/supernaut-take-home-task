@@ -42,7 +42,7 @@ class StripeWebhookHandler:
             return ResponseHelper.error("Invalid event data -- event id not found")
 
         # check if event was already processed for idempotency
-        if StripeProcessedEvent.query.get(event_id):
+        if db.session.get(StripeProcessedEvent, event_id):
             return ResponseHelper.success("Event already processed")
 
         # check if event type is relevant

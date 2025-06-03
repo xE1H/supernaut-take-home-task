@@ -2,7 +2,7 @@
 User Access Handler for the app.
 """
 
-from models import User
+from models import db, User
 from datetime import datetime, timezone
 from helpers import ResponseHelper, DateTimeNaiveHelper
 
@@ -14,7 +14,7 @@ class UserAccessHandler:
         Get user access status
         """
 
-        user = User.query.get(user_id)
+        user = db.session.get(User, user_id)
         if not user:
             return ResponseHelper.error("User not found", 404)
 
