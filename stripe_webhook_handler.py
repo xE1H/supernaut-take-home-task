@@ -53,7 +53,7 @@ class StripeWebhookHandler:
             # mark event as processed
             db.session.add(StripeProcessedEvent(stripe_event_id=event_id))
 
-            # get or create user
+            # get or create user, for the sake of this task, users get created here if they don't exist
             user = StripeWebhookHandler._get_or_create_user(event_data)
             if not user:
                 return ResponseHelper.error("Customer ID not found in event data")
@@ -63,7 +63,7 @@ class StripeWebhookHandler:
 
             db.session.commit()
             return ResponseHelper.success(f"Event processed successfully for user id {user.id}")
-            # Adding ID here just so I pull that user ID later
+            # Adding the ID here into the response just so I could pull that user ID later
 
         except Exception as e:
             db.session.rollback()
