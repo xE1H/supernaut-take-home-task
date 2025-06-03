@@ -3,6 +3,7 @@ venv/*
 .idea
 .idea/*
 tests/.coverage
+.coverage
 tests/.pytest_cache
 tests/.pytest_cache/*
 instance/
