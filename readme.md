@@ -8,7 +8,7 @@
 - [API endpoints](#api-endpoints)
 - [Testing](#testing)
 - [Design considerations](#design-considerations)
-- [Example webhook payloads](#example-webhook-payloads)
+- [Example webhook payloads & testing w/ Postman](#example-webhook-payloads)
 
 ## Quick start
 
