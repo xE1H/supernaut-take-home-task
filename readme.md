@@ -21,10 +21,10 @@ Prerequisites:
 
 ```shell
 # Install required dependencies
-pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 
 # Run the app
-python app.py
+python3 app.py
 ```
 
 ## Database
@@ -161,7 +161,7 @@ The app processes the following Stripe webhook events to maintain subscription s
 
 ```sh
 # Install testing dependencies
-pip install -r requirements-test.txt
+python3 -m pip install -r requirements-test.txt
 
 # Run tests with coverage report
 pytest --cov=.
